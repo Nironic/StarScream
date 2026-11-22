@@ -1,0 +1,15 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4.45"
+tokio = {version = "1.54.1", features = ["full"]}
+
+[profile.release]
+opt-level = 3           # Максимальная оптимизация скорости кода (0-3)
+lto = "fat"              # Включает Link-Time Optimization (оптимизация между библиотеками)
+codegen-units = 1       # Уменьшает количество параллельных потоков сборки ради лучшей оптимизации
+panic = "abort"         # Отключает раскрутку стека при панике (сильно уменьшает размер и ускоряет код)
+strip = "symbols"

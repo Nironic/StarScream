@@ -1,0 +1,4 @@
+./server/target
+./starscream_release/target
+*.log
+./starscream_release/target/x86_64-pc-windows-gnu
