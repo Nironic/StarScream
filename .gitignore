@@ -1,2 +1,4 @@
 ./server/target
 ./starscream_release/target
+*.log 
+

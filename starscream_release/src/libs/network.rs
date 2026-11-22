@@ -1,31 +1,22 @@
 // Реализация сетевой игры
 use macroquad::math::Vec2;
-use macroquad::*;
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpStream;
 
-// PROTOCOL
-// Name,     pos[0]        pos[1]         pos[2]
-// Roman, [10.0, 50.0], [30.0, 110.0], [99.0, 23.0]
-/*
+// Структура игрока
 pub struct Player {
-    pub name: String,
-    pub pos: Vec2, // Позиция игрока
-    pub rot: f32,  // Поворот в градусах
-    pub vel: Vec2, // Ускорение
-}
-*/
-struct Player {
     name: String,
     pos: Vec<Vec2>,
 }
 
+// Структура работы с клиентом
 pub struct Client {
     pub sock: Option<TcpStream>,
     pub status: bool,
     pub cl: Vec<Player>,
 }
 
+// Возвращаем ошибку или результат
 pub struct RetErr {
     pub soul: String,
     pub status: bool,
@@ -35,8 +26,6 @@ impl Client {
     pub fn new(ip: &str, port: &str) -> Self {
         match TcpStream::connect(format!("{}:{}", ip, port)) {
             Ok(stream) => {
-                // Метод set_nonblocking вызывается прямо на TcpStream
-                // Если он вернет ошибку, unwrap() вызовет панику (или обработайте через match/if let)
                 stream.set_nonblocking(true).unwrap();
 
                 Self {
@@ -45,19 +34,15 @@ impl Client {
                     cl: vec![],
                 }
             }
-            Err(_err) => {
-                // Если подключение не удалось, сразу возвращаем структуру с None
-                Self {
-                    sock: None,
-                    status: false,
-                    cl: vec![],
-                }
-            }
+            Err(_err) => Self {
+                sock: None,
+                status: false,
+                cl: vec![],
+            },
         }
     }
 
-    pub fn send(&mut self, name: String, pos: &Vec<Vec2>) -> bool {
-        // Форматируем строку (обязательно с \n)
+    pub fn send(&mut self, name: String, pos: [Vec2; 3]) -> bool {
         let str_form = format!(
             "{}:{}:{}:{}:{}:{}:{}\n",
             name,
@@ -69,10 +54,7 @@ impl Client {
             pos[2][1] as f32
         );
 
-        // .as_mut() превращает &mut Option<TcpStream> в Option<&mut TcpStream>
-        // Теперь мы работаем по ссылке, не забирая сокет из структуры
         if let Some(ref mut sock) = self.sock {
-            // Импортируйте std::io::Write в начале файла, чтобы методы ниже работали
             if sock.write_all(str_form.as_bytes()).is_err() {
                 self.status = false;
                 return false;
@@ -83,7 +65,6 @@ impl Client {
             }
             true
         } else {
-            // Сокета вообще нет (status == false)
             self.status = false;
             false
         }
@@ -94,10 +75,10 @@ impl Client {
         /*
         let str_form = format!(
             "{}:{}:{}:{}:{}:{}:{}\n",
-            name, pos[0][0], pos[0][1], pos[1][0], pos[1][1], pos[2][0], pos[2][1]
+            Roman, pos[0][0], pos[0][1], pos[1][0], pos[1][1], pos[2][0], pos[2][1]
         );
 
-        RESULT: Name,10.0,20.0,30.0,40.0,50.0,60.0
+        RESULT: Roman,10.0,20.0,30.0,40.0,50.0,60.0
         */
         let result = self.recv();
         if result.status == false {
@@ -116,7 +97,7 @@ impl Client {
                 println!("Предупреждение: неверный формат пакета от сервера");
                 return false;
             }
-            let name = format_str[0]; // &str
+            let name = format_str[0];
             let v1_1: f32 = format_str[1].parse().unwrap_or(0.0);
             let v1_2: f32 = format_str[2].parse().unwrap_or(0.0);
             let v2_1: f32 = format_str[3].parse().unwrap_or(0.0);
@@ -179,13 +160,9 @@ impl Client {
         }
 
         return true;
-
-        //draw_triangle_lines(v1, v2, v3, thickness, color);
     }
 
     pub fn recv(&mut self) -> RetErr {
-        // 1. Берем ссылку на Option, превращаем в Option<&TcpStream> через .as_ref()
-        // 2. Если сокет есть, вызываем try_clone() уже у самого TcpStream
         let cloned_stream = match self.sock.as_ref() {
             Some(stream) => match stream.try_clone() {
                 Ok(s) => s,
