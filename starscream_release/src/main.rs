@@ -8,6 +8,7 @@ mod scene {
 
 // Импорт всех прикладных библиотек
 mod libs {
+    pub mod console; // Консоль для отображения информации
     pub mod effects; // Эффекты
     pub mod network; // Работа с сетью
     pub mod player; // Работа с игроком
