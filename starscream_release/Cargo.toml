@@ -1,0 +1,14 @@
+[package]
+name = "starscream_release"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+macroquad = "0.4.16"
+
+[profile.release]
+opt-level = 3           # Максимальная оптимизация скорости кода (0-3)
+lto = true              # Включает Link-Time Optimization (оптимизация между библиотеками)
+codegen-units = 1       # Уменьшает количество параллельных потоков сборки ради лучшей оптимизации
+panic = "abort"         # Отключает раскрутку стека при панике (сильно уменьшает размер и ускоряет код)
+strip = true
