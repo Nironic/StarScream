@@ -89,6 +89,11 @@ pub async fn menu() -> Scene {
         clear_background(LIGHTGRAY); // Грейвим экран
         grand(); // Рисуем границы
 
+        if is_key_pressed(KeyCode::Space) {
+            effects.spawn_explosion(player.pos, 150.0);
+        }
+        effects.update_and_draw();
+
         bt_play.show(&player); // Показываем кнопку play
         bt_option.show(&player); // Показываем кнопку options
         if bt_exit.show(&player) {
